@@ -68,6 +68,9 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
 ]
+# settings.py
+CELERY_BROKER_URL = 'redis://localhost:6379/0'  # Update with your Redis URL if needed
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
 
 ROOT_URLCONF = 'github_webhooks.urls'
 

@@ -12,10 +12,10 @@ class UserProfile(models.Model):
 
 
 class SlackWebhook(models.Model):
-    """Model to store Slack webhook URLs with associated GitHub token and user."""
-    url = models.URLField(unique=True)  # Unique constraint on the URL
-    github_token = models.CharField(max_length=255)  # GitHub OAuth token for API access
-    notification_days = models.PositiveIntegerField(default=7)  # Days for notification interval
+
+    url = models.URLField(unique=True)  
+    github_token = models.CharField(max_length=255) 
+    notification_days = models.PositiveIntegerField(default=7)  
     user_profile = models.ForeignKey(UserProfile, related_name='slack_webhooks', on_delete=models.CASCADE)
 
     def __str__(self):

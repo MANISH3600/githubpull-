@@ -14,5 +14,5 @@ class SlackWebhookForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
-        # You can perform additional validation here if necessary
+
         return cleaned_data

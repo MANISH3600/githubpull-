@@ -17,11 +17,11 @@ def add_slack_webhook(request):
                 url=form.cleaned_data['slack_url'],
                 github_token=form.cleaned_data['github_token'],
                 notification_days=form.cleaned_data['notification_days'],
-                user_profile=UserProfile.objects.get(user=request.user)  # Set the current user
+                user_profile=UserProfile.objects.get(user=request.user)  
             )
-            slack_webhooks.save()  # Save the form data to the database
+            slack_webhooks.save()  
 
-            # Extract repository name from the GitHub token (or URL)
+
             repo_url = form.cleaned_data['repository_url'] 
              # Assuming you provide a GitHub URL here
             print("the repo url is :" + repo_url)
@@ -43,27 +43,28 @@ def add_slack_webhook(request):
             print("the setup waws done ")
             print("the repo full name is "+ repofullname)
 
-            return render(request, 'accounts/success.html')  # Render success template
+            return render(request, 'accounts/success.html') 
     else:
         form = SlackWebhookForm()
 
-    return render(request, 'accounts/add_slack_webhook.html', {'form': form})  # Render the form template
+    return render(request, 'accounts/add_slack_webhook.html', {'form': form})  
 
 
 from urllib.parse import urlparse
 
 def extract_repo_name(url):
-    """Extract the repository name and owner/repo_name from the GitHub URL."""
-    # Parse the URL
+
+
     parsed_url = urlparse(url)
-    # Split the path and get the parts
+
     path_parts = parsed_url.path.strip('/').split('/')
     
-    # Check if the URL has enough parts (should be at least 2: owner and repo)
+
     if len(path_parts) >= 2:
-        owner = path_parts[-2]  # Second to last part is the owner
-        repo_name = path_parts[-1]  # Last part is the repository name
-        owner_repo_name = f"{owner}/{repo_name}"  # Combined format: owner/repo_name
+        owner = path_parts[-2]  
+        repo_name = path_parts[-1] 
+        owner_repo_name = f"{owner}/{repo_name}"  
+        print(owner_repo_name)
         return  owner_repo_name  
-    return  None  
+
 
