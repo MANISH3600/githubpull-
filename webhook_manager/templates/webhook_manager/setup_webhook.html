@@ -1,0 +1,44 @@
+<!-- webhook_manager/templates/webhook_manager/setup_webhook.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Setup GitHub Webhook</title>
+</head>
+<body>
+    <h1>Setup GitHub Webhook</h1>
+    <form method="POST" action="{% url 'setup_webhook' %}">
+        {% csrf_token %}
+        <div>
+            <label for="github_token">GitHub Token:</label>
+            <input type="password" id="github_token" name="github_token" required>
+        </div>
+        <div>
+            <label for="repository_name">Repository Name:</label>
+            <input type="text" id="repository_name" name="repository_name" required>
+        </div>
+        <button type="submit">Set Up Webhook</button>
+    </form>
+
+    {% if form.errors %}
+        <div>
+            <h2>Errors:</h2>
+            <ul>
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <li>{{ field.label }}: {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+                {% for error in form.non_field_errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    {% if success %}
+        <h2>Webhook Set Up Successfully!</h2>
+        <p>Your webhook has been configured to listen for pull requests in the specified repository.</p>
+    {% endif %}
+</body>
+</html>
