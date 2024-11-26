@@ -1,5 +1,3 @@
-
-
 import json
 import requests
 from django.shortcuts import render
@@ -12,28 +10,18 @@ import json
 import requests
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-
-
 from accounts.models import *
-
 from django.utils import timezone
 
-
-
 def setup_webhook(repo_name, token):
-
     setup_github_webhook(repo_name, token)
-    print("the setup function ran ")
 
 def setup_github_webhook(repo_name, token):
-    print("the setup_github_webhook function ran")
     url = f'https://api.github.com/repos/{repo_name}/hooks'
     headers = {
         'Authorization': f'token {token}',
         'Accept': 'application/vnd.github.v3+json',
     }
-
-    # Include multiple events related to pull requests
     data = {
         "config": {
             "url": "https://b015-103-203-230-44.ngrok-free.app/webhook/",
@@ -42,94 +30,54 @@ def setup_github_webhook(repo_name, token):
         "events": ["pull_request", "pull_request_review", "pull_request_review_comment"],
         "active": True
     }
-
     response = requests.post(url, json=data, headers=headers)
     if response.status_code == 201:
         print("Webhook created successfully.")
     else:
         print(f"Error creating GitHub webhook: {response.text}")
 
-
-
 @csrf_exempt
 def github_webhook(request):
-    print("The request came")
     if request.method == "POST":
-        print("The request came ")
         event_type = request.headers.get('X-GitHub-Event')
-
         if event_type == "pull_request":
-            print("The event is a pull request")
-
             payload = json.loads(request.body)
-            print(payload)
             repo_name = payload['repository']['full_name']
-            print("The repo name is " + repo_name)
             pr_data = payload.get('pull_request', {})
             pr_title = pr_data.get('title')
             pr_url = pr_data.get('html_url')
-            print("the pull request title is " + pr_title)
-            print("the pull request url is " + pr_url)
             try:
-                repository = Repository.objects.get(name=repo_name)  # Adjust as necessary for your model
+                repository = Repository.objects.get(name=repo_name)
             except Repository.DoesNotExist:
-                print(f"Repository '{repo_name}' does not exist.")
                 return JsonResponse({'status': 'repository not found'}, status=404)
-
-
-            # Create PullRequest instance
             pull_request = PullRequest.objects.create(
                 title=pr_title,
                 url=pr_url,
-                repository=repository,  # Assuming you have a way to link this
-                pull_request_id=pr_data.get('id')  # Use the ID of the PR as its unique identifier
+                repository=repository,
+                pull_request_id=pr_data.get('id')
             )
-            print("The post is saved")
-
-            # Notify all Slack webhooks associated with the repository
             notify_slack(pull_request, repo_name)
-
             return JsonResponse({'status': 'success'}, status=200)
-
         return JsonResponse({'status': 'ignored'}, status=200)
-
     return JsonResponse({'status': 'invalid method'}, status=405)
+
 def notify_slack(pull_request, repo_name):
-    # Fetch the repository first
     try:
         repository = Repository.objects.get(name=repo_name)
     except Repository.DoesNotExist:
-        print(f"No repository found with name: {repo_name}")
         return
-
-    # Get all SlackWebhook instances associated with this repository
     slack_webhooks = repository.slack_webhooks.all()
     if not slack_webhooks.exists():
-        print(f"No SlackWebhook found for repository {repo_name}")
         return
-
     message = f"New Pull Request: {pull_request.title} - {pull_request.url}"
-
     for slack_webhook in slack_webhooks:
         slack_webhook_url = slack_webhook.url
         payload = {'text': message}
         response = requests.post(slack_webhook_url, json=payload)
         if response.status_code != 200:
             print(f"Failed to send notification to Slack: {response.text}")
-
-    # Set the last notification sent time to the current time
     pull_request.last_notification_sent = timezone.now()
     pull_request.save()
-
-
-
-
-
-
-
-
-
-
 
 
 
