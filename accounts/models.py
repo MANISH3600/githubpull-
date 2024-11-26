@@ -3,9 +3,8 @@ from django.contrib.auth.models import User
 
 
 class UserProfile(models.Model):
-    """Model to store additional user information and link to User."""
+
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
-    # Additional fields can be added if needed in the future
 
     def __str__(self):
         return self.user.username
@@ -25,7 +24,7 @@ class SlackWebhook(models.Model):
 class Repository(models.Model):
     """Model to store GitHub repositories and link to multiple Slack webhooks."""
     name = models.CharField(max_length=255)
-    github_url = models.URLField(unique=True)  # Unique constraint on the GitHub URL
+    github_url = models.URLField(unique=True) 
     slack_webhooks = models.ManyToManyField(SlackWebhook, related_name='repositories', blank=True)
 
     def __str__(self):
@@ -36,11 +35,11 @@ class PullRequest(models.Model):
     """Model to store pull requests and associate them with a repository."""
     title = models.CharField(max_length=255)
     url = models.URLField()
-    created_at = models.DateTimeField(auto_now_add=True)  # Timestamp when created
-    updated_at = models.DateTimeField(auto_now=True)  # Timestamp when updated
-    last_notification_sent = models.DateTimeField(null=True, blank=True)  # Track last notification date
+    created_at = models.DateTimeField(auto_now_add=True)  
+    updated_at = models.DateTimeField(auto_now=True)  
+    last_notification_sent = models.DateTimeField(null=True, blank=True)  
     repository = models.ForeignKey(Repository, related_name='pull_requests', on_delete=models.CASCADE)
-    pull_request_id = models.IntegerField(unique=True)  # Unique identifier for GitHub pull request
+    pull_request_id = models.IntegerField(unique=True)  
 
     def __str__(self):
         return f"{self.title} (ID: {self.pull_request_id})"
