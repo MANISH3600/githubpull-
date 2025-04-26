@@ -7,47 +7,57 @@ import requests
 @shared_task
 def send_pull_request_notifications():
     current_date = timezone.now()
-    
-    # Define the notification interval (10 seconds for testing)
     notification_interval = timezone.timedelta(seconds=10)
 
-    # Fetch all pull requests that need notifications
     pull_requests = PullRequest.objects.prefetch_related('repository__slack_webhooks').filter(
         models.Q(last_notification_sent__isnull=True) |
         models.Q(last_notification_sent__lte=current_date - notification_interval)
     )
 
-    # Loop through each pull request
     for pr in pull_requests:
         time_open = current_date - pr.created_at
-        
-        # Get associated Slack webhooks
         slack_webhooks = pr.repository.slack_webhooks.all()
 
         if not slack_webhooks:
             print(f"No Slack webhooks found for repository '{pr.repository.name}'")
             continue
 
-        # Send notifications to each Slack webhook
         for slack_webhook in slack_webhooks:
-            send_slack_notification(slack_webhook.url, pr, time_open)
+            if time_open.days >= 1:  
+                message = (
+                    f"*🚨 Hey Team! 🚨*\n\n"
+                    f"*This pull request is taking too long!*\n\n"
+                    f"⏳ The PR titled *'{pr.title}'* has been open for *{time_open.days} days, "
+                    f"{time_open.seconds // 3600} hours, and {(time_open.seconds // 60) % 60} minutes*.\n\n"
+                    f"*Please review it as soon as possible!*\n\n"
+                    f"🔗 *[View the pull request here]*({pr.url})\n\n"
+                    f"⏰ *Let's get this resolved quickly!*\n\n"
+                    f"-----------------------------------------\n\n"
+                    f"                                         \n\n*"
 
-        # Update the last notification sent time
+                )
+
+            else:  
+                message = (
+                    f"*🔔 New Pull Request Notification!* 🔔\n\n"
+                    f"📝 PR titled *'{pr.title}'* is now open.\n\n"
+                    f"⏳ It has been open for *{time_open.days} days, "
+                    f"{time_open.seconds // 3600} hours, and {(time_open.seconds // 60) % 60} minutes*.\n\n"
+                    f"💬 *Please review and leave comments!*\n\n"
+                    f"🔗 *[View the pull request here]*({pr.url})"
+                )
+                
+
+            send_slack_notification(slack_webhook.url, message)
+
+
         pr.last_notification_sent = current_date
         pr.save()
 
-def send_slack_notification(url, pull_request, time_open):
-    message = (
-        f"New Pull Request:\n"
-        f"- Title: {pull_request.title}\n"
-        f"- URL: {pull_request.url}\n"
-        f"- Opened for: {time_open.days} days, {time_open.seconds // 3600} hours, "
-        f"and {(time_open.seconds // 60) % 60} minutes\n"
-    )
-
+def send_slack_notification(url, message):
     payload = {'text': message}
     try:
         response = requests.post(url, json=payload)
-        response.raise_for_status()  
+        response.raise_for_status()
     except requests.exceptions.RequestException as e:
         print(f"Failed to send notification to Slack for {url}: {e}")
