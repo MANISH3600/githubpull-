@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: django_app2
+    image: app:django
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/django
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+
+  celery:
+    build:
+      context: .
+    container_name: celery_worker1
+    command: celery -A github_webhooks worker --loglevel=info
+    volumes:
+      - .:/django
+    depends_on:
+      - redis
+      - app
+
+  celery-beat:
+    build:
+      context: .
+    container_name: celery_beat1
+    command: celery -A github_webhooks beat --loglevel=info
+    volumes:
+      - .:/django
+    depends_on:
+      - redis
+      - app
+      - celery
+
+  redis:
+    image: redis:7.4.3
+    container_name: redis_server1
+    ports:
+      - "6379:6379"
