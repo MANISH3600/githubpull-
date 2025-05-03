@@ -54,7 +54,7 @@ SITE_ID = 1
 CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:8000',                    # Local development
     'http://localhost:8000',                    # Local development
-    'https://b015-103-203-230-44.ngrok-free.app'  # Replace with the current ngrok URL
+    ''  # Replace with the current ngrok URL
 ]
 
 
@@ -147,8 +147,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 SOCIALACCOUNT_PROVIDERS = {
     'github': {
         'APP': {
-            'client_id': 'Ov23liLKSLVW2U7QNLLD',  # Replace with your GitHub app's client ID
-            'secret': 'f6c9da76cbefd6c58e362e8df0830df9256ad7a4',  # Replace with your GitHub app's client secret
+            'client_id': '',  # Replace with your GitHub app's client ID
+            'secret': '',  # Replace with your GitHub app's client secret
             'key': ''
         },
         'SCOPE': ['repo', 'admin:repo_hook', 'user'],  # Add the required scopes
