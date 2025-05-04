@@ -1,6 +1,6 @@
 just clone the repo 
 go to the project directory
-make sure you are in teh folder where compose.yml file is present 
+make sure you are in the folder where compose.yml file is present 
 run docker-compose up --build
 
 the received notification would be like this 
