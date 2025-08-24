@@ -1,3 +1,8 @@
+A Django-based system that integrates GitHub and Slack to provide real-time pull request notifications (PR creation, merge, comments). It includes daily PR summaries and leverages Celery for asynchronous task processing. Ideal for developers looking to automate GitHub notifications with webhooks.
+
+
+to run the project 
+
 just clone the repo 
 go to the project directory
 make sure you are in the folder where compose.yml file is present 
